@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "syscall.h"
 
 uint64
 sys_exit(void)
@@ -107,4 +108,29 @@ sys_waitx(void)
   if (copyout(p->pagetable, addr2, (char *)&rtime, sizeof(int)) < 0)
     return -1;
   return ret;
+}
+
+int get_syscall_number(unsigned int mask) {
+    int position = 0;
+    while ((mask & 1) == 0) {
+        mask >>= 1;
+        position++;
+    }
+    return position;
+}
+
+uint64
+sys_getSysCount(void) {
+  int mask;
+  argint(0, &mask);
+  
+  // making sure only one bit is set in the mask, i.e. that it's a valid mask
+  if (mask == 0 || (mask & (mask - 1)) != 0)
+    return -1;
+  
+  int syscall_num = get_syscall_number(mask);
+  if (syscall_num < 1 || syscall_num > SYS_getsyscount)
+    return -1;
+
+  return myproc()->syscall_count[syscall_num]; // get and return count of respective syscall from current process
 }

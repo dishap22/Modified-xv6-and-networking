@@ -152,6 +152,7 @@ found:
   p->rtime = 0;
   p->etime = 0;
   p->ctime = ticks;
+  memset(p->syscall_count, 0, sizeof(p->syscall_count)); // all syscalls are called 0 times at start
   return p;
 }
 
@@ -304,6 +305,8 @@ int fork(void)
     return -1;
   }
   np->sz = p->sz;
+
+  memmove(np->syscall_count, p->syscall_count, sizeof(p->syscall_count)); // copy counts from parent to child
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
