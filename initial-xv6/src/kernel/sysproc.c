@@ -134,3 +134,33 @@ sys_getSysCount(void) {
 
   return myproc()->syscall_count[syscall_num]; // get and return count of respective syscall from current process
 }
+
+uint64 
+sys_sigalarm(void) {
+  int interval;
+  argint(0, &interval);
+
+  uint64 alarm_handler;
+  argaddr(1, &alarm_handler);
+
+  struct proc *p = myproc();
+
+  p->current_ticks = 0;
+  p->interval = interval;
+  p->alarm_handler = alarm_handler;
+  p->alarm_status = 0;
+
+  return 0;
+}
+
+uint64
+sys_sigreturn(void) {
+  struct proc *p = myproc();
+
+  // restoring trapframe to the original one
+  memmove(p->trapframe, p->alarm_tf, sizeof(*p->trapframe));
+  kfree((char*)p->alarm_tf);
+  p-> alarm_status = 0;
+  usertrapret();
+  return 0;
+}

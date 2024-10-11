@@ -23,6 +23,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int waitx(int*, int* /*wtime*/, int* /*rtime*/);
+int sigalarm(int ticks, void(*handler)());
+int sigreturn(void);
 int getsyscount(int);
 
 // ulib.c

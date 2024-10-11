@@ -152,6 +152,11 @@ found:
   p->rtime = 0;
   p->etime = 0;
   p->ctime = ticks;
+  p->current_ticks = 0;
+  p->alarm_status = 0;
+  p->interval = 0;
+  p->alarm_handler = -1;
+  p->alarm_tf = ((void*)0);
   memset(p->syscall_count, 0, sizeof(p->syscall_count)); // all syscalls are called 0 times at start
   return p;
 }
@@ -165,6 +170,9 @@ freeproc(struct proc *p)
   if (p->trapframe)
     kfree((void *)p->trapframe);
   p->trapframe = 0;
+  if (p -> alarm_tf)
+    kfree((void *)p->alarm_tf);
+  p -> alarm_tf = 0;
   if (p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;
@@ -176,6 +184,11 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  p->current_ticks = 0;
+  p->alarm_status = 0;
+  p->interval = 0;
+  p->alarm_handler = -1;
+  memset(p->syscall_count, 0, sizeof(p->syscall_count)); 
 }
 
 // Create a user page table for a given process, with no user memory,

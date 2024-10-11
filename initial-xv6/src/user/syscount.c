@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
       "fork", "exit", "wait", "pipe", "read", "kill", "exec",
       "fstat", "chdir", "dup", "getpid", "sbrk", "sleep", "uptime",
       "open", "write", "mknod", "unlink", "link", "mkdir", "close",
-      "wait", "getsyscount"
+      "wait", "sigalarm", "sigreturn", "getsyscount"
     };
     printf("PID %d called %s %d times\n", pid, syscall_names[val], count);
   }

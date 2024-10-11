@@ -120,6 +120,11 @@ struct proc
   uint ctime;                  // When was the process created
   uint etime;                  // When did the process exited
   uint syscall_count[32];      // Counts of diff. syscalls
+  int interval;                // After how much time we should call the handler
+  int current_ticks;           // How many ticks have passed so far
+  int alarm_status;            // Is alarm currently set or not
+  uint64 alarm_handler;        // Pointer to handler function
+  struct trapframe *alarm_tf;  // Copy the trapframe for sigreturn
 };
 
 extern struct proc proc[NPROC];

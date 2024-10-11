@@ -21,4 +21,6 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_waitx  22
-#define SYS_getsyscount 23
+#define SYS_sigalarm 23
+#define SYS_sigreturn 24
+#define SYS_getsyscount 25

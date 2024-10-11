@@ -102,6 +102,8 @@ extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_waitx(void);
+extern uint64 sys_sigalarm(void);
+extern uint64 sys_sigreturn(void);
 extern uint64 sys_getSysCount(void);
 
 // An array mapping syscall numbers from syscall.h
@@ -129,6 +131,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_waitx]   sys_waitx,
+[SYS_sigalarm] sys_sigalarm,
+[SYS_sigreturn] sys_sigreturn,
 [SYS_getsyscount] sys_getSysCount,
 };
 
@@ -144,7 +148,7 @@ syscall(void)
     // and store its return value in p->trapframe->a0
     if(num != SYS_getsyscount) { 
       p->syscall_count[num]++;
-    } // increment the respective syscall's count
+    } // increment the respective syscall's count 
     p->trapframe->a0 = syscalls[num]();
   } else {
     printf("%d %s: unknown sys call %d\n",
