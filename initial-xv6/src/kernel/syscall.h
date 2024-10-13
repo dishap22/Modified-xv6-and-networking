@@ -24,3 +24,4 @@
 #define SYS_sigalarm 23
 #define SYS_sigreturn 24
 #define SYS_getsyscount 25
+#define SYS_settickets 26

@@ -16,6 +16,16 @@ main()
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
+    #if defined LBS
+      printf("Using LBS\n");
+
+    #elif defined MLFQ
+      printf("Using MLFQ\n");
+    
+    #elif defined RR
+      printf("Using RR\n");
+    #endif
+    printf("\n");
     kinit();         // physical page allocator
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging

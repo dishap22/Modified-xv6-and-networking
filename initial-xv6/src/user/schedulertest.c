@@ -20,7 +20,12 @@ int main()
     {
       if (n < IO)
       {
+        #if defined LBS
+        sleep(40);
+
+        #else
         sleep(200); // IO bound processes
+        #endif
       }
       else
       {
@@ -28,14 +33,20 @@ int main()
         {
         } // CPU bound process
       }
-      // printf("Process %d finished\n", n);
+      printf("Process %d finished\n", n);
       exit(0);
     }
+    #if defined LBS
+    else {
+      settickets(n * 2 + 1);
+    }
+    #endif
   }
   for (; n > 0; n--)
   {
     if (waitx(0, &wtime, &rtime) >= 0)
     {
+      printf("\n%d ticket. rtime: %d, wtime: %d\n", 2*n + 1, rtime, wtime);
       trtime += rtime;
       twtime += wtime;
     }

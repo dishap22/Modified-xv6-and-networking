@@ -12,6 +12,19 @@ struct proc proc[NPROC];
 
 struct proc *initproc;
 
+#define RAND_MAX 0x7fffffff
+
+static unsigned int seed = 1;
+
+int rand(void) {
+    seed = seed * 1664525 + 1013904223;
+    return (seed & RAND_MAX);
+}
+
+void srand(unsigned int s) {
+    seed = s;
+}
+
 int nextpid = 1;
 struct spinlock pid_lock;
 
@@ -158,6 +171,7 @@ found:
   p->alarm_handler = -1;
   p->alarm_tf = ((void*)0);
   memset(p->syscall_count, 0, sizeof(p->syscall_count)); // all syscalls are called 0 times at start
+  p->tickets = 1;
   return p;
 }
 
@@ -323,7 +337,7 @@ int fork(void)
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
-
+  np->tickets = p->tickets;
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 
@@ -476,7 +490,6 @@ int wait(uint64 addr)
 //    via swtch back to the scheduler.
 void scheduler(void)
 {
-  struct proc *p;
   struct cpu *c = mycpu();
 
   c->proc = 0;
@@ -484,25 +497,66 @@ void scheduler(void)
   {
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
-
-    for (p = proc; p < &proc[NPROC]; p++)
-    {
-      acquire(&p->lock);
-      if (p->state == RUNNABLE)
+    #if defined RR
+      struct cpu *c = mycpu();
+      struct proc *p;
+      for (p = proc; p < &proc[NPROC]; p++)
       {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
+        acquire(&p->lock);
+        if (p->state == RUNNABLE)
+        {
+          // Switch to chosen process.  It is the process's job
+          // to release its lock and then reacquire it
+          // before jumping back to us.
+          p->state = RUNNING;
+          c->proc = p;
+          swtch(&c->context, &p->context);
 
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+        }
+        release(&p->lock);
       }
-      release(&p->lock);
-    }
+    
+    #elif defined LBS
+      struct cpu *c = mycpu();
+      struct proc *p;
+      int ticket_total = 0;
+
+      for (p = proc; p < &proc[NPROC]; p++)
+      {
+        acquire(&p->lock);
+        if (p->state == RUNNABLE)
+        {
+          ticket_total += p->tickets;
+        }
+        release(&p->lock);
+      }
+      
+      if (!ticket_total) continue;
+      
+      srand(ticks);
+      int winning_ticket = rand() % ticket_total;
+
+      for (p = proc; p < &proc[NPROC]; p++)
+      {
+        acquire(&p->lock);
+        if (p->state == RUNNABLE)
+        {
+          winning_ticket -= p->tickets;
+          if (winning_ticket <= 0)
+          {
+            p->state = RUNNING;
+            c->proc = p;
+            swtch(&c->context, &p->context);
+            c->proc = 0;
+          }
+        }
+        release(&p->lock);
+      }
+
+    #endif
   }
 }
 

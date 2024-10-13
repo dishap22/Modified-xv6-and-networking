@@ -119,12 +119,19 @@ struct proc
   uint rtime;                  // How long the process ran for
   uint ctime;                  // When was the process created
   uint etime;                  // When did the process exited
+
+  //For getsyscount
   uint syscall_count[32];      // Counts of diff. syscalls
+
+  //For sigalarm and sigreturn
   int interval;                // After how much time we should call the handler
   int current_ticks;           // How many ticks have passed so far
   int alarm_status;            // Is alarm currently set or not
   uint64 alarm_handler;        // Pointer to handler function
   struct trapframe *alarm_tf;  // Copy the trapframe for sigreturn
+
+  //For LBS
+  uint tickets;                // Number of tickets a process owns
 };
 
 extern struct proc proc[NPROC];

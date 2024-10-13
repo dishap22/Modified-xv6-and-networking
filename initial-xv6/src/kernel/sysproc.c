@@ -164,3 +164,11 @@ sys_sigreturn(void) {
   usertrapret();
   return 0;
 }
+
+uint64
+sys_settickets(void) {
+  int tickets; 
+  argint(0, &tickets);
+  myproc()->tickets = tickets;
+  return 0;
+}
